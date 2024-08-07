@@ -1,8 +1,10 @@
 #include <Arduino.h>
+#include <Servo.h>
+
 
 const int echoPin = 7;
 const int trigPin = 8;
-const int buttonPin = 2;
+const int servoPin = 9;
 
 int distance;
 long duration; // using long to ensure precision
@@ -16,6 +18,9 @@ int getDistance() {
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.0343 / 2; // speed of sound in air is 0.0343 cm/um
+  if (distance > 400 || distance < 2) {
+    distance = 9999;
+  }
   return distance;
 }
 
@@ -30,16 +35,16 @@ void setup() {
   
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(servoPin, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
-  Serial.begin(1200); // debugging
-
+  Serial.begin(9600); // debugging
+  for (int i = 0; i < 5; i++) {
+    flash(LED_BUILTIN, 100);
+  }
 }
 
 void loop() {
-  if (distance < 50) {
-    flash(LED_BUILTIN, distance*10);
-    digitalWrite(LED_BUILTIN, LOW);
-  }
   Serial.println(getDistance());
+  flash(LED_BUILTIN, 100);
 }
