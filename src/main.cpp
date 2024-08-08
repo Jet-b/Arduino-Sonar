@@ -1,13 +1,18 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-
+// pins
 const int echoPin = 7;
 const int trigPin = 8;
 const int servoPin = 9;
 
+Servo servo;
+
+// variables
 int distance;
 long duration; // using long to ensure precision
+
+int angle = 180;
 
 int getDistance() {
 
@@ -39,12 +44,33 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(9600); // debugging
+
+  servo.attach(servoPin);
+
+  // startup sequence
   for (int i = 0; i < 5; i++) {
     flash(LED_BUILTIN, 100);
   }
 }
 
 void loop() {
-  Serial.println(getDistance());
-  flash(LED_BUILTIN, 100);
+  if (Serial.available()) {
+    int value = Serial.parseInt();
+    Serial.println(value);
+    if (value == '1') {
+      angle += 1;
+    }
+    if (value == '2') {
+      angle -= 1;
+    }
+
+    // Ensure angle is within valid range
+    if (angle > 180) {
+      angle = 180;
+    }
+    if (angle < 0) {
+      angle = 0;
+    }
+    servo.write(angle); // Update servo angle
+  }
 }
