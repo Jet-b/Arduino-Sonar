@@ -1,18 +1,20 @@
 #include <Arduino.h>
 #include <Servo.h>
+#include <SoftwareSerial.h>
 
-// pins
+SoftwareSerial inputSerial(10, 11); // RX, TX
+SoftwareSerial outputSerial(12, 13);   // RX, TX
+
 const int echoPin = 7;
 const int trigPin = 8;
 const int servoPin = 9;
 
 Servo servo;
 
-// variables
 int distance;
-long duration; // using long to ensure precision
+long duration; 
 
-int angle = 180;
+int angle = 90;
 
 int getDistance() {
 
@@ -29,11 +31,13 @@ int getDistance() {
   return distance;
 }
 
-void flash(int pin, int delayTime = 1000) {
-  digitalWrite(pin, HIGH);
-  delay(delayTime);
-  digitalWrite(pin, LOW);
-  delay(delayTime);
+void flash(int pin, int numFlashes = 5, int delayTime = 1000) {
+  for (int i = 0; i < numFlashes; i++) {
+    digitalWrite(pin, HIGH);
+    delay(delayTime);
+    digitalWrite(pin, LOW);
+    delay(delayTime);
+  }
 }
 
 void setup() {
@@ -43,34 +47,28 @@ void setup() {
   pinMode(servoPin, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  Serial.begin(9600); // debugging
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // Wait for the serial port to connect. Needed for native USB port only
+  }
+
+  Serial.println("Hardware serial ready");
 
   servo.attach(servoPin);
-
-  // startup sequence
-  for (int i = 0; i < 5; i++) {
-    flash(LED_BUILTIN, 100);
-  }
 }
 
 void loop() {
-  if (Serial.available()) {
-    int value = Serial.parseInt();
-    Serial.println(value);
-    if (value == '1') {
-      angle += 1;
+  if (Serial.available() > 0) {
+    char inChar = Serial.read();
+    if (inChar == '1') {
+      angle = min(angle + 1, 180);
+    } else if (inChar == '2') {
+      angle = max(angle - 1, 0);
+    } else if (inChar == '4') {
+      angle = max(angle - 10, 0);
+    } else if (inChar == '3') {
+      angle = min(angle + 10, 180);
     }
-    if (value == '2') {
-      angle -= 1;
-    }
-
-    // Ensure angle is within valid range
-    if (angle > 180) {
-      angle = 180;
-    }
-    if (angle < 0) {
-      angle = 0;
-    }
-    servo.write(angle); // Update servo angle
+    servo.write(angle);
   }
 }

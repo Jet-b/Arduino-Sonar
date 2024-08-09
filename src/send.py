@@ -34,9 +34,11 @@ leftx = 0
 lefty = 0
 rightx = 0
 righty = 0
+button = 0
 
 running = True
 while running:
+    button = 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             ser.close()
@@ -44,19 +46,30 @@ while running:
             running = False
         if event.type == pygame.JOYAXISMOTION:
             axis, value = event.axis, event.value
+        if event.type == pygame.JOYBUTTONDOWN:
+            button = event.button
     
     screen.fill((0,0,0))
     pygame.draw.circle(screen, (255, 255, 255), (WIDTH//2, HEIGHT//2), min(WIDTH, HEIGHT)//2, width=5)
     scaled_value_x = (value * (WIDTH // 2)) + (WIDTH // 2)
     scaled_value_y = (value * (HEIGHT // 2)) + (HEIGHT // 2)
     
+    if button == 9:
+        ser.write(b'3')
+        print("Left")
+    if button == 10:
+        ser.write(b'4')
+        print("Right")
+    
     if axis == 0:
         if value > 0.5:
             print("Positive")
-            ser.write(b'1')
+            ser.write(b'2')
+            pygame.time.wait(10)
         if value < -0.5:
             print("Negative")
-            ser.write(b'2')
+            ser.write(b'1')
+            pygame.time.wait(10)
         leftx = scaled_value_x
     if axis == 1:
         lefty = scaled_value_y
