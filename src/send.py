@@ -32,6 +32,8 @@ running = True
 
 while running:
     
+    button = None
+    
     # Get the joystick
     try:
         if joystick == None:
@@ -59,8 +61,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.JOYBUTTONDOWN:
+            button = event.button
     
     if joystick != None:
+        
+        # joystick down buttons
+        l3 = joystick.get_button(7)
+        r3 = joystick.get_button(8)
+        
+        # bumper buttons
+        lb = joystick.get_button(9)
+        rb = joystick.get_button(10)
+        
         # Get the left joystick values
         leftx = joystick.get_axis(0)
         lefty = joystick.get_axis(1)
@@ -89,6 +102,10 @@ while running:
         # draw the joystick positions
         pygame.draw.circle(screen, RED, leftScreenPos, 5, width=5) 
         pygame.draw.circle(screen, RED, rightScreenPos, 5, width=5) 
+        if l3:
+            pygame.draw.circle(screen, BLACK, leftScreenPos, 2, width=2)
+        if r3:
+            pygame.draw.circle(screen, BLACK, rightScreenPos, 2, width=2)
     else:
         # Alert the user that no joystick was found
         pygame.draw.circle(screen, RED, LEFT_JOYSTICK_CENTER, 5, width=5)
@@ -104,7 +121,11 @@ while running:
             Ser.write(b'1')
         elif leftx > 0.5:
             Ser.write(b'2')
+        if button == 9:
+            Ser.write(b'3')
+        if button == 10:
+            Ser.write(b'4')
         
-        pygame.time.wait(5)
+        pygame.time.wait(10)
     
     pygame.display.flip()
